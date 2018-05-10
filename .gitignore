@@ -1,0 +1,10 @@
+# Ignore Everything
+/*
+/*/
+
+# Except These
+!/Sources/
+!/.gitignore
+!/CMakeLists.txt
+!/LICENSE.md
+!/README.md
