@@ -4,6 +4,7 @@
 
 # Except These
 !/Sources/
+!/.gitattributes
 !/.gitignore
 !/CMakeLists.txt
 !/LICENSE.md
