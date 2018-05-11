@@ -36,6 +36,8 @@ namespace GLSLTools{
       return float_value_;
     }
 
+    std::string ToString();
+
     static Value* NewInstance(float floatValue, bool is_constant = false);
     static Value* NewInstance(int intValue, bool is_constant = false);
   };

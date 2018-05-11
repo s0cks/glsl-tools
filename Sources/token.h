@@ -2,8 +2,12 @@
 #define GLSLTOOLS_TOKEN_H
 
 #include <string>
+#include <sstream>
 
 namespace GLSLTools{
+#define FOR_EACH_KEYWORD(V) \
+  V(kRETURN, "return")
+
 #define FOR_EACH_SYMBOL(V) \
   V(kEQUALS, "=") \
   V(kLBRACE, "{") \
@@ -22,6 +26,7 @@ namespace GLSLTools{
 
   enum TokenKind{
   #define DEFINE_TOKEN(Tk, Name) Tk,
+    FOR_EACH_KEYWORD(DEFINE_TOKEN)
     FOR_EACH_SYMBOL(DEFINE_TOKEN)
     FOR_EACH_LITERAL(DEFINE_TOKEN)
   #undef DEFINE_TOKEN
@@ -36,7 +41,7 @@ namespace GLSLTools{
     SourcePosition(unsigned int r, unsigned int c):
       row(r),
       column(c){}
-  }
+  };
 
   class Token{
   private:
@@ -67,6 +72,36 @@ namespace GLSLTools{
 
     TokenKind GetKind() const{
       return kind_;
+    }
+
+    std::string GetKindDescription() const{
+      #define DEFINE_SWITCH_CASE(Tk, Name) \
+        case Tk: return #Name;
+
+        switch(kind_){
+          FOR_EACH_KEYWORD(DEFINE_SWITCH_CASE)
+          FOR_EACH_SYMBOL(DEFINE_SWITCH_CASE)
+          FOR_EACH_LITERAL(DEFINE_SWITCH_CASE)
+          case kIDENTIFIER: return "<identifier>";
+          case kEOF: return "<eof>";
+          default: return "<unknown>";
+        }
+    }
+
+    std::string GetPosition() const{
+      std::stringstream stream;
+      stream << "(" << position_.row << ", " << position_.column << ")";
+      return stream.str();
+    }
+
+    std::string ToString() const{
+      std::stringstream stream;
+      stream << "{";
+      stream << "\"text\"=" << text_;
+      stream << ",\"kind\"=" << GetKindDescription();
+      stream << ",\"position\"=" << GetPosition();
+      stream << "}";
+      return stream.str();
     }
   };
 }

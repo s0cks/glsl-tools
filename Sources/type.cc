@@ -1,4 +1,5 @@
 #include "type.h"
+#include <sstream>
 
 namespace GLSLTools{
   Type* Type::FLOAT = new Type("float", 1, false);
@@ -19,5 +20,19 @@ namespace GLSLTools{
     Value* val = new Value(Type::INT, is_constant);
     val->int_value_ = value;
     return val;
+  }
+
+  std::string Value::ToString(){
+    std::stringstream stream;
+    if(IsConstant()){
+      if(GetType()->IsCompatibile((*Type::FLOAT))){
+        stream << AsFloat();
+      } else if(GetType()->IsCompatibile((*Type::INT))){
+        stream << AsInt();
+      }
+    } else{
+      stream << "Type[" << GetType()->GetName() << "]";
+    }
+    return stream.str();
   }
 }
