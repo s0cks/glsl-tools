@@ -8,7 +8,8 @@ namespace GLSLTools{
   #define FOR_EACH_NODE(V) \
     V(Return) \
     V(Literal) \
-    V(Sequence)
+    V(Sequence) \
+    V(BinaryOp)
 
     #define DECLARE_COMMON_NODE_FUNCTIONS(BaseName) \
       virtual const char* Name(){ return #BaseName; } \
@@ -114,6 +115,45 @@ namespace GLSLTools{
       }
 
       DECLARE_COMMON_NODE_FUNCTIONS(Return);
+    };
+
+    class BinaryOpNode : public AstNode{
+    public:
+      enum Kind{
+        kAdd,
+        kSubtract,
+        kDivide,
+        kMultiply,
+        kUnknown
+      };
+    private:
+      Kind kind_;
+      AstNode* left_;
+      AstNode* right_;
+    public:
+      BinaryOpNode(Kind kind, AstNode* left, AstNode* right):
+        kind_(kind),
+        left_(left),
+        right_(right){}
+
+      AstNode* GetLeft() const{
+        return left_;
+      }
+
+      AstNode* GetRight() const{
+        return right_;
+      }
+
+      Kind GetKind() const{
+        return kind_;
+      }
+
+      void VisitChildren(AstNodeVisitor* vis){
+        GetLeft()->Visit(vis);
+        GetRight()->Visit(vis);
+      }
+
+      DECLARE_COMMON_NODE_FUNCTIONS(BinaryOp);
     };
 }
 

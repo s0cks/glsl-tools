@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <cstring>
 
 namespace GLSLTools{
 #define FOR_EACH_KEYWORD(V) \
@@ -18,7 +19,8 @@ namespace GLSLTools{
   V(kMUL, "*") \
   V(kDIVIDE, "/") \
   V(kLPAREN, "(") \
-  V(kRPAREN, ")")
+  V(kRPAREN, ")") \
+  V(kCOMMA, ",")
 
 #define FOR_EACH_LITERAL(V) \
   V(kLIT_STRING, "<literal string>") \
@@ -31,6 +33,7 @@ namespace GLSLTools{
     FOR_EACH_LITERAL(DEFINE_TOKEN)
   #undef DEFINE_TOKEN
     kIDENTIFIER,
+    kINVALID,
     kEOF
   };
 
@@ -49,6 +52,14 @@ namespace GLSLTools{
     TokenKind kind_;
     SourcePosition position_;
   public:
+    Token(std::string text, TokenKind kind, SourcePosition* pos):
+      text_(text),
+      kind_(kind),
+      position_(0, 0){
+      if(pos != nullptr){
+        std::memcpy(&position_, pos, sizeof(SourcePosition));
+      }
+    }
     Token(std::string text, TokenKind kind, unsigned int row, unsigned int column):
       text_(text),
       kind_(kind),

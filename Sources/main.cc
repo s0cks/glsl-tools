@@ -1,20 +1,20 @@
-#include <iostream>
-#include "ast.h"
+#include "parser.h"
 #include "ast_printer.h"
-#include "token.h"
+#include <fstream>
+#include <iostream>
 
 using namespace GLSLTools;
 
 int
 main(int argc, char** argv){
-  SequenceNode* seq = new SequenceNode();
-  seq->Add(new ReturnNode(new LiteralNode(Value::NewInstance(10, true))));
+  std::ifstream stream;
+  stream.open(argv[1], std::ifstream::binary);
 
+  std::cout << "Opening file: " << argv[1] << std::endl;
+
+  Parser parser(&stream);
+  AstNode* code = parser.ParseUnit();
   AstPrinter printer(std::cout);
-  seq->Visit(&printer);
-
-  Token* token = new Token("return",  kRETURN, 1, 1);
-  std::cout << token->ToString() << std::endl;
-
+  code->Visit(&printer);
   return 0;
 }
