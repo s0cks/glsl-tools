@@ -55,6 +55,10 @@ namespace GLSLTools{
         virtual bool IsConstantExpr() const{
           return false;
         }
+
+        virtual Value* EvalConstantExpr(){
+          return nullptr;
+        }
     };
 
     class SequenceNode : public AstNode{
@@ -95,6 +99,10 @@ namespace GLSLTools{
         return children_.Length();
       }
 
+      void SetChildAt(size_t idx, AstNode* child){
+        children_[idx] = child;
+      }
+
       DECLARE_COMMON_NODE_FUNCTIONS(Sequence);
     };
 
@@ -111,6 +119,14 @@ namespace GLSLTools{
       }
 
       void VisitChildren(AstNodeVisitor* vis){}
+
+      virtual bool IsConstantExpr(){
+        return value_->IsConstant();
+      }
+
+      virtual Value* EvalConstantExpr(){
+        return value_;
+      }
 
       DECLARE_COMMON_NODE_FUNCTIONS(Literal);
     };
@@ -168,6 +184,38 @@ namespace GLSLTools{
       void VisitChildren(AstNodeVisitor* vis){
         GetLeft()->Visit(vis);
         GetRight()->Visit(vis);
+      }
+
+      virtual Value* EvalConstantExpr(){
+        Value* left = GetLeft()->EvalConstantExpr();
+        Value* right = GetRight()->EvalConstantExpr();
+
+        if(left->IsConstant() && right->IsConstant()){
+          if(left->GetType()->IsCompatibile(*Type::INT)){
+            int result = left->AsInt();
+            switch(GetKind()){
+              case kAdd: result += right->AsInt();
+              case kSubtract: result -= right->AsInt();
+              default: result = -1;
+            }
+            return Value::NewInstance(result);
+          } else if(left->GetType()->IsCompatibile(*Type::FLOAT)){
+            float result = left->AsFloat();
+            switch(GetKind()){
+              case kAdd: result += right->AsFloat();
+              case kSubtract: result -= right->AsFloat();
+              default: result = -1;
+            }
+            return Value::NewInstance(result);
+          }
+        }
+
+        return nullptr;
+      }
+
+      virtual bool IsConstantExpr(){
+        return GetLeft()->IsConstantExpr() &&
+               GetRight()->IsConstantExpr();
       }
 
       DECLARE_COMMON_NODE_FUNCTIONS(BinaryOp);

@@ -56,9 +56,7 @@ namespace GLSLTools{
 
     inline Token* PeekToken(){
       if(peek_token_ != nullptr){
-        Token* result = peek_token_;
-        peek_token_ = nullptr;
-        return result;
+        return peek_token_;
       }
       return peek_token_ = NextToken();
     }

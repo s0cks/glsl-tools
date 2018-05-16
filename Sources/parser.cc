@@ -49,9 +49,13 @@ namespace GLSLTools{
   }
 
   AstNode* Parser::ParseBinaryExpr(){
+    Token* next;
+
     AstNode* expr = ParseUnaryExpr();
-    while(IsBinaryExpr(PeekToken())){
-      expr = new BinaryOpNode(GetBinaryExprKind(NextToken()), expr, ParseBinaryExpr());
+    while(IsBinaryExpr(next = PeekToken())){
+      next = NextToken();
+      std::cout << "Parsing binary expression: " << next->GetText() << std::endl;
+      expr = new BinaryOpNode(GetBinaryExprKind(next), expr, ParseBinaryExpr());
     }
     return expr;
   }
@@ -68,8 +72,8 @@ namespace GLSLTools{
         while((next = PeekToken())->GetKind() != kRPAREN){
           res->SetAt(ptr++, ParseLiteral());
           switch((next = PeekToken())->GetKind()){
-            case kCOMMA: break;
-            case kRPAREN: return res;
+            case kCOMMA: NextToken(); break;
+            case kRPAREN: NextToken(); return res;
             default: return res;
           }
         }
@@ -124,13 +128,17 @@ namespace GLSLTools{
 
     Token* next;
     switch((next = PeekToken())->GetKind()){
-      default: break;
+      default:
+        std::cout << "Peeker: " << next->ToString() << std::endl;
+        break;
     }
 
     result = new LiteralNode(ParseLiteral());
 
     switch((next = PeekToken())->GetKind()){
-      default: return result;
+      default:
+        std::cout << "P33k: " << next->ToString() << std::endl;
+        return result;
     }
   }
 
