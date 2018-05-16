@@ -56,34 +56,81 @@ namespace GLSLTools{
     return expr;
   }
 
-  AstNode* Parser::ParseUnaryExpr(){
+  Value* Parser::ParseVector(int vec_type){
+    Token* next;
+    Expect(next = NextToken(), kLPAREN);
+    switch(vec_type){
+      case 2:
+      case 3:
+      case 4:{
+        Value* res = Value::NewVector(vec_type);
+        int ptr = 0;
+        while((next = PeekToken())->GetKind() != kRPAREN){
+          res->SetAt(ptr++, ParseLiteral());
+          switch((next = PeekToken())->GetKind()){
+            case kCOMMA: break;
+            case kRPAREN: return res;
+            default: return res;
+          }
+        }
+      }
+      default:{
+        Array<Value*> values(10);
+        while((next = PeekToken())->GetKind() != kRPAREN){
+          values.Add(ParseLiteral());
+        }
+
+        Value* res = Value::NewVector(values.Length() - 1);
+        for(int i = 0; i < values.Length(); i++){
+          res->SetAt(i, values[i]);
+        }
+
+        return res;
+      }
+    }
+  }
+
+  Value* Parser::ParseLiteral(){
     Token* next;
     switch((next = NextToken())->GetKind()){
       case kLIT_NUMBER:{
+        std::cout << "Parsing literal nummber: " << next->GetText() << std::endl;
+        std::string text = next->GetText();
         if(HasDecimalPlace(next->GetText())){
-          if(EndsWith(next->GetText(), "f") || EndsWith(next->GetText(), "F")){
-            float val = atof(next->GetText().substr(next->GetText().size() - 1).c_str());
-            return new LiteralNode(Value::NewInstance(val, true));
+          float val;
+          if(EndsWith(text, "f") || EndsWith(text, "F")){
+            val = atof(text.substr(text.size() - 1).c_str());
           } else{
-            float val = atof(next->GetText().c_str());
-            return new LiteralNode(Value::NewInstance(val, true));
+            val = atof(text.c_str());
           }
+          return Value::NewInstance(val, true);
         } else{
-          int val = atoi(next->GetText().c_str());
-          return new LiteralNode(Value::NewInstance(val, true));
+          int val = atoi(text.c_str());
+          return Value::NewInstance(val, true);
         }
       }
-      case kIDENTIFIER:{
-        std::string name = next->GetText();
-        LocalVariable* local;
-        if(!scope_->Lookup(name, &local)){
-          std::cerr << "Undefined local: " << name << std::endl;
-          std::exit(1);
-          return nullptr;
-        }
-        std::cout << "Loading local: " << name << std::endl;
-        return new LoadLocalNode(local);
+      case kVEC2: return ParseVector(2);
+      case kVEC3: return ParseVector(3);
+      case kVEC4: return ParseVector(4);
+      default: {
+        std::cerr << "Unexpected token: " << next->ToString() << std::endl;
+        return nullptr;
       }
+    }
+  }
+
+  AstNode* Parser::ParseUnaryExpr(){
+    AstNode* result;
+
+    Token* next;
+    switch((next = PeekToken())->GetKind()){
+      default: break;
+    }
+
+    result = new LiteralNode(ParseLiteral());
+
+    switch((next = PeekToken())->GetKind()){
+      default: return result;
     }
   }
 

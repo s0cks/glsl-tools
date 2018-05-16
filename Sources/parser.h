@@ -114,6 +114,9 @@ namespace GLSLTools{
     AstNode* ParseBinaryExpr();
     AstNode* ParseUnaryExpr();
     AstNode* ParseBlock();
+
+    Value* ParseVector(int vec_type);
+    Value* ParseLiteral();
   public:
     Parser(std::ifstream* infile):
       buffer_(nullptr),

@@ -23,6 +23,31 @@ namespace GLSLTools{
     return val;
   }
 
+  Value* Value::NewVector(size_t size){
+    Value* val;
+    switch(size){
+      case 2: val = new Value(Type::VEC2, false); break;
+      case 3: val = new Value(Type::VEC3, false); break;
+      case 4: val = new Value(Type::VEC4, false); break;
+      default: return nullptr;
+    }
+    val->vec_value_.values = reinterpret_cast<Value**>(malloc(sizeof(Value*) * size));
+    val->vec_value_.values_len = size;
+    return val;
+  }
+
+  bool Value::IsScalar() const{
+    return GetType()->IsCompatibile(*Type::VEC2) ||
+           GetType()->IsCompatibile(*Type::VEC3) ||
+           GetType()->IsCompatibile(*Type::VEC4);
+  }
+
+  size_t Value::GetScalarSize() const{
+    return IsScalar() ?
+           vec_value_.values_len :
+           0;
+  }
+
   std::string Value::ToString(){
     std::stringstream stream;
     if(IsConstant()){
@@ -31,6 +56,19 @@ namespace GLSLTools{
       } else if(GetType()->IsCompatibile((*Type::INT))){
         stream << AsInt();
       }
+    } else if(IsScalar()){
+      stream << "vec" << GetScalarSize() << "(";
+      for(size_t i = 0; i < GetScalarSize(); i++){
+        if(GetAt(i) == nullptr){
+          stream << "null";
+        } else{
+          stream << GetAt(i)->ToString();
+        }
+        if(i < (GetScalarSize() - 1)){
+          stream << ", ";
+        }
+      }
+      stream << ")";
     } else{
       stream << "Type[" << GetType()->GetName() << "]";
     }

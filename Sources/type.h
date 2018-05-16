@@ -3,10 +3,17 @@
 
 #include <string>
 #include <cstring>
+#include <iostream>
 #include "array.h"
 
 namespace GLSLTools{
   class Type;
+  class Value;
+
+  struct Vector{
+    Value** values;
+    size_t values_len;
+  };
 
   class Value{
   private:
@@ -15,6 +22,7 @@ namespace GLSLTools{
     union{
       float float_value_;
       int int_value_;
+      Vector vec_value_;
     };
   public:
     Value(Type* type, bool is_constant):
@@ -30,6 +38,10 @@ namespace GLSLTools{
       return is_constant_;
     }
 
+    bool IsScalar() const;
+
+    size_t GetScalarSize() const;
+
     int AsInt() const{
       return int_value_;
     }
@@ -38,10 +50,19 @@ namespace GLSLTools{
       return float_value_;
     }
 
+    Value* GetAt(size_t idx) const{
+      return vec_value_.values[idx];
+    }
+
+    void SetAt(size_t idx, Value* val){
+      vec_value_.values[idx] = val;
+    }
+
     std::string ToString();
 
     static Value* NewInstance(float floatValue, bool is_constant = false);
     static Value* NewInstance(int intValue, bool is_constant = false);
+    static Value* NewVector(size_t size);
   };
 
   class Type{

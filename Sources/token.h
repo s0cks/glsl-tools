@@ -7,7 +7,10 @@
 
 namespace GLSLTools{
 #define FOR_EACH_KEYWORD(V) \
-  V(kRETURN, "return")
+  V(kRETURN, "return") \
+  V(kVEC2, "vec2") \
+  V(kVEC3, "vec3") \
+  V(kVEC4, "vec4")
 
 #define FOR_EACH_SYMBOL(V) \
   V(kEQUALS, "=") \
