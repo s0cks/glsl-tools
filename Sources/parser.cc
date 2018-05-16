@@ -19,6 +19,7 @@ namespace GLSLTools{
       case '}': return new Token("}", kRBRACE, &position_);
       case '(': return new Token("(", kLPAREN, &position_);
       case ')': return new Token(")", kRPAREN, &position_);
+      case ';': return new Token(";", kSEMICOLON, &position_);
       case '"':{
         std::stringstream stream;
         while((next = NextChar()) != '"') stream << next;
@@ -72,20 +73,51 @@ namespace GLSLTools{
           return new LiteralNode(Value::NewInstance(val, true));
         }
       }
+      case kIDENTIFIER:{
+        std::string name = next->GetText();
+        LocalVariable* local;
+        if(!scope_->Lookup(name, &local)){
+          std::cerr << "Undefined local: " << name << std::endl;
+          std::exit(1);
+          return nullptr;
+        }
+        std::cout << "Loading local: " << name << std::endl;
+        return new LoadLocalNode(local);
+      }
     }
   }
 
   AstNode* Parser::ParseBlock(){
-    SequenceNode* code = new SequenceNode();
+    SequenceNode* code = new SequenceNode(scope_);
+    scope_ = code->GetScope();
 
     Token* next;
     while((next = NextToken())->GetKind() != kRBRACE){
       switch(next->GetKind()){
-        case kRETURN: code->Add(new ReturnNode(ParseBinaryExpr())); break;
+        case kRETURN:{
+          code->Add(new ReturnNode(ParseBinaryExpr()));
+          Expect(next = NextToken(), kSEMICOLON);
+          break;
+        }
+        case kIDENTIFIER:{
+          std::string name = next->GetText();
+          Expect(next = NextToken(), kEQUALS);
+
+          LocalVariable* local;
+          if(!scope_->Lookup(name, &local)){
+            std::cerr << "Undefined local: " << name << std::endl;
+            std::exit(1);
+            return nullptr;
+          }
+          code->Add(new StoreLocalNode(local, ParseBinaryExpr()));
+          Expect(next = NextToken(), kSEMICOLON);
+          break;
+        }
         default: std::cerr << "Invalid Token: " << next->ToString() << std::endl;
       }
     }
 
+    scope_ = scope_->GetParent();
     return code;
   }
 

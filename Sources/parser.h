@@ -3,6 +3,7 @@
 
 #include "token.h"
 #include "ast.h"
+#include "scope.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -18,6 +19,7 @@ namespace GLSLTools{
     size_t ptr_;
     SourcePosition position_;
     Token* peek_token_;
+    LocalScope* scope_;
 
     inline char PeekChar(){
       if(ptr_ >= buffer_len_) return '\0';
@@ -118,6 +120,7 @@ namespace GLSLTools{
       ptr_(0),
       buffer_len_(0),
       position_(0, 0),
+      scope_(),
       peek_token_(nullptr){
 
       if(*infile){

@@ -38,7 +38,7 @@ namespace GLSLTools{
       Adjust();
       stream_ << "return ";
       node->VisitChildren(this);
-      stream_ << std::endl;
+      stream_ << ";" << std::endl;
     }
 
     void VisitBinaryOp(BinaryOpNode* node){
@@ -49,6 +49,18 @@ namespace GLSLTools{
         default: stream_ << " ? "; break;
       }
       node->GetRight()->Visit(this);
+    }
+
+    void VisitStoreLocal(StoreLocalNode* node){
+      Adjust();
+      stream_ << node->GetLocal()->GetName();
+      stream_ << " := ";
+      node->GetValue()->Visit(this);
+      stream_ << ";" << std::endl;
+    }
+
+    void VisitLoadLocal(LoadLocalNode* node){
+      stream_ << "$" << node->GetLocal()->GetName();
     }
   };
 }

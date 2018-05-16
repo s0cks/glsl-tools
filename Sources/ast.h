@@ -3,13 +3,17 @@
 
 #include "array.h"
 #include "type.h"
+#include "scope.h"
+#include <iostream>
 
 namespace GLSLTools{
   #define FOR_EACH_NODE(V) \
     V(Return) \
     V(Literal) \
     V(Sequence) \
-    V(BinaryOp)
+    V(BinaryOp) \
+    V(LoadLocal) \
+    V(StoreLocal)
 
     #define DECLARE_COMMON_NODE_FUNCTIONS(BaseName) \
       virtual const char* Name(){ return #BaseName; } \
@@ -56,9 +60,22 @@ namespace GLSLTools{
     class SequenceNode : public AstNode{
     private:
       Array<AstNode*> children_;
+      LocalScope* scope_;
     public:
-      SequenceNode():
-        children_(10){}
+      SequenceNode(LocalScope* scope = nullptr):
+        scope_(new LocalScope(scope)),
+        children_(10){
+
+        LocalVariable* local = new LocalVariable("gl_Position", Type::VEC2);
+        if(!scope_->AddLocal(local)){
+          std::cerr << "Unable to define basic locals" << std::endl;
+          std::exit(1);
+        }
+      }
+
+      LocalScope* GetScope() const{
+        return scope_;
+      }
 
       void Add(AstNode* node){
         children_.Add(node);
@@ -154,6 +171,46 @@ namespace GLSLTools{
       }
 
       DECLARE_COMMON_NODE_FUNCTIONS(BinaryOp);
+    };
+
+    class LoadLocalNode : public AstNode{
+    private:
+      LocalVariable* local_;
+    public:
+      LoadLocalNode(LocalVariable* local):
+        local_(local){}
+
+      LocalVariable* GetLocal() const{
+        return local_;
+      }
+
+      void VisitChildren(AstNodeVisitor* vis){}
+
+      DECLARE_COMMON_NODE_FUNCTIONS(LoadLocal);
+    };
+
+    class StoreLocalNode : public AstNode{
+    private:
+      LocalVariable* local_;
+      AstNode* value_;
+    public:
+      StoreLocalNode(LocalVariable* local, AstNode* value):
+        local_(local),
+        value_(value){}
+
+      LocalVariable* GetLocal() const{
+        return local_;
+      }
+
+      AstNode* GetValue() const{
+        return value_;
+      }
+
+      void VisitChildren(AstNodeVisitor* vis){
+        GetValue()->Visit(vis);
+      }
+
+      DECLARE_COMMON_NODE_FUNCTIONS(StoreLocal);
     };
 }
 
