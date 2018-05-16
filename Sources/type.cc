@@ -1,4 +1,5 @@
 #include "type.h"
+#include "ast.h"
 #include <sstream>
 
 namespace GLSLTools{
@@ -34,5 +35,14 @@ namespace GLSLTools{
       stream << "Type[" << GetType()->GetName() << "]";
     }
     return stream.str();
+  }
+
+  Function::Function(std::string name, Type* result_type, SequenceNode* code = new SequenceNode()):
+    name_(name),
+    result_type_(result_type),
+    code_(code){}
+
+  Function::~Function(){
+    delete code_;
   }
 }

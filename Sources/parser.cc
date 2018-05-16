@@ -15,6 +15,10 @@ namespace GLSLTools{
       case '=': return new Token("=", kEQUALS, &position_);
       case ',': return new Token(",", kCOMMA, &position_);
       case '+': return new Token("+", kPLUS, &position_);
+      case '{': return new Token("{", kLBRACE, &position_);
+      case '}': return new Token("}", kRBRACE, &position_);
+      case '(': return new Token("(", kLPAREN, &position_);
+      case ')': return new Token(")", kRPAREN, &position_);
       case '"':{
         std::stringstream stream;
         while((next = NextChar()) != '"') stream << next;
@@ -26,14 +30,14 @@ namespace GLSLTools{
     if(isdigit(next) || next == '.'){
       std::stringstream stream;
       stream << next;
-      while(isdigit(next = NextChar()) || next == '.' || next == 'f' || next == 'F') stream << next;
+      while(isdigit(next = PeekChar()) || next == '.' || next == 'f' || next == 'F') stream << NextChar();
       return new Token(stream.str(), kLIT_NUMBER, &position_);
     } else{
       std::stringstream stream;
       stream << next;
 
-      while(!isspace(next = NextChar()) && !IsSymbolChar(next)){
-        stream << next;
+      while(!isspace(next = PeekChar()) && !IsSymbolChar(next)){
+        stream << NextChar();
         if(IsKeyword(stream.str())){
           std::string val = stream.str();
           return new Token(val, GetKeyword(val), &position_);
@@ -71,20 +75,43 @@ namespace GLSLTools{
     }
   }
 
-  AstNode* Parser::ParseUnit(){
+  AstNode* Parser::ParseBlock(){
     SequenceNode* code = new SequenceNode();
 
     Token* next;
-    while((next = NextToken())->GetKind() != kEOF){
+    while((next = NextToken())->GetKind() != kRBRACE){
       switch(next->GetKind()){
-        case kRETURN:
-          code->Add(new ReturnNode(ParseBinaryExpr()));
-          break;
-        default:
-          std::cerr << "Invalid Token: " << next->ToString() << std::endl;
+        case kRETURN: code->Add(new ReturnNode(ParseBinaryExpr())); break;
+        default: std::cerr << "Invalid Token: " << next->ToString() << std::endl;
       }
     }
 
     return code;
+  }
+
+  CodeUnit* Parser::ParseUnit(){
+    CodeUnit* unit = new CodeUnit();
+
+    Token* next;
+    while((next = NextToken())->GetKind() != kEOF){
+      switch(next->GetKind()){
+        case kIDENTIFIER:{
+          std::string type = next->GetText();
+          std::string name = Expect(next = NextToken(), kIDENTIFIER)->GetText();
+
+          std::cout << "Type: " << type << std::endl;
+          std::cout << "Name: " << name << std::endl;
+
+          Expect(next = NextToken(), kLPAREN);
+          Expect(next = NextToken(), kRPAREN);
+          Expect(next = NextToken(), kLBRACE);
+          std::cout << "Parsing block" << std::endl;
+          unit->AddFunction(new Function(name, Type::Get(type), static_cast<SequenceNode*>(ParseBlock())));
+          break;
+        }
+      }
+    }
+
+    return unit;
   }
 }

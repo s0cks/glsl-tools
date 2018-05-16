@@ -36,6 +36,16 @@ namespace GLSLTools{
       }
     }
 
+    inline Token* Expect(Token* next, TokenKind expected){
+      std::cout << "Testing: " << next->GetText() << std::endl;
+      if(next->GetKind() != expected){
+        std::cerr << "Unexpected: " << next->ToString() << std::endl;
+        std::cerr << "Expected: " << expected << std::endl;
+        std::exit(1);
+      }
+      return next;
+    }
+
     inline char NextRealChar(){
       char next;
       while(isspace(next = NextChar()));
@@ -70,7 +80,7 @@ namespace GLSLTools{
 
     inline bool IsSymbolChar(char c) const{
       #define DECLARE_CHECK(Tk, Name) \
-        if(std::string(1, c) == std::string(#Name)){ \
+        if(std::string(1, c) == std::string(Name)){ \
           return true; \
         }
       FOR_EACH_SYMBOL(DECLARE_CHECK)
@@ -101,6 +111,7 @@ namespace GLSLTools{
     Token* NextToken();
     AstNode* ParseBinaryExpr();
     AstNode* ParseUnaryExpr();
+    AstNode* ParseBlock();
   public:
     Parser(std::ifstream* infile):
       buffer_(nullptr),
@@ -126,7 +137,7 @@ namespace GLSLTools{
       }
     }
 
-    AstNode* ParseUnit();
+    CodeUnit* ParseUnit();
   };
 }
 

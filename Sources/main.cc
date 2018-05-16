@@ -13,8 +13,7 @@ main(int argc, char** argv){
   std::cout << "Opening file: " << argv[1] << std::endl;
 
   Parser parser(&stream);
-  AstNode* code = parser.ParseUnit();
-  AstPrinter printer(std::cout);
-  code->Visit(&printer);
+  CodeUnit* code = parser.ParseUnit();
+  code->GetFunction("main")->GetCode()->Visit(AstPrinter::SYS_OUT);
   return 0;
 }

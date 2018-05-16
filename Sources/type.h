@@ -2,6 +2,8 @@
 #define GLSLTOOLS_TYPE_H
 
 #include <string>
+#include <cstring>
+#include "array.h"
 
 namespace GLSLTools{
   class Type;
@@ -79,6 +81,67 @@ namespace GLSLTools{
     static Type* VEC4;
     static Type* VOID;
     static Type* ERROR;
+
+    static Type* Get(std::string value){
+      if(value == "void"){
+        return VOID;
+      } else if(value == "float"){
+        return FLOAT;
+      } else if(value == "vec2"){
+        return VEC2;
+      } else if(value == "vec3"){
+        return VEC3;
+      } else if(value == "vec4"){
+        return VEC4;
+      } else if(value == "int"){
+        return INT;
+      } else{
+        return ERROR;
+      }
+    }
+  };
+
+  class SequenceNode;
+
+  class Function{
+  private:
+    std::string name_;
+    Type* result_type_;
+    SequenceNode* code_;
+  public:
+    Function(std::string name, Type* result_type, SequenceNode* code);
+    ~Function();
+
+    Type* GetResultType() const{
+      return result_type_;
+    }
+
+    std::string GetName() const{
+      return name_;
+    }
+
+    SequenceNode* GetCode() const{
+      return code_;
+    }
+  };
+
+  class CodeUnit{
+  private:
+    Array<Function*> functions_;
+  public:
+    CodeUnit():
+      functions_(10){}
+
+    void AddFunction(Function* func){
+      functions_.Add(func);
+    }
+
+    Function* GetFunction(std::string name){
+      for(size_t i = 0; i < functions_.Length(); i++){
+        if(functions_[i]->GetName() == name) return functions_[i];
+      }
+      return nullptr;
+    }
   };
 }
 

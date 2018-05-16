@@ -15,6 +15,8 @@ namespace GLSLTools{
       for(int i = 0; i < indent_; i++) stream_ << " ";
     }
   public:
+    static AstPrinter* SYS_OUT;
+
     AstPrinter(std::ostream& stream):
       stream_(stream){}
     ~AstPrinter(){}
@@ -37,6 +39,16 @@ namespace GLSLTools{
       stream_ << "return ";
       node->VisitChildren(this);
       stream_ << std::endl;
+    }
+
+    void VisitBinaryOp(BinaryOpNode* node){
+      node->GetLeft()->Visit(this);
+      switch(node->GetKind()){
+        case BinaryOpNode::kAdd: stream_ << " + "; break;
+        case BinaryOpNode::kSubtract: stream_ << " - "; break;
+        default: stream_ << " ? "; break;
+      }
+      node->GetRight()->Visit(this);
     }
   };
 }
